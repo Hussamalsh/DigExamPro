@@ -1,0 +1,66 @@
+﻿@using DigExamPro.Models;
+
+@code
+{
+    [Parameter]
+    public Exam Exam { get; set; }
+
+    private Dictionary<int, string> Answers = new Dictionary<int, string>();
+
+    private void SubmitExam()
+    {
+        // Logic to submit the exam answers.
+        // Send the 'Answers' dictionary to the backend for evaluation.
+    }
+
+    private void SetAnswer(int index, ChangeEventArgs e)
+    {
+        Answers[index] = e.Value.ToString();
+    }
+}
+
+<!-- Student view for attempting the exam -->
+<h4>@Exam.Title</h4>
+
+@foreach (var question in Exam.Questions)
+{
+    var currentIndex = Exam.Questions.IndexOf(question);
+
+    <div class="question">
+        <p>@question.QuestionText</p>
+
+        @if (question.QuestionType == QuestionType.MultipleChoice)
+        {
+            foreach (var option in question.Options)
+            {
+                <label>
+                    <input type="radio" name="@currentIndex" value="@option" @onchange="(e) => SetAnswer(currentIndex, e)" /> @option
+                </label>
+            }
+        }
+        else if (question.QuestionType == QuestionType.TrueFalse)
+        {
+            <label>
+                <input type="radio" name="@currentIndex" value="True" @onchange="(e) => SetAnswer(currentIndex, e)" /> True
+            </label>
+            <label>
+                <input type="radio" name="@currentIndex" value="False" @onchange="(e) => SetAnswer(currentIndex, e)" /> False
+            </label>
+        }
+        else if (question.QuestionType == QuestionType.FillInTheBlank)
+        {
+            <label>
+                Answer:
+                <input type="text" @bind="Answers[currentIndex]" />
+            </label>
+        }
+        else if (question.QuestionType == QuestionType.Essay)
+        {
+            <label>
+                Essay:
+                <textarea @bind="Answers[currentIndex]"></textarea>
+            </label>
+        }
+    </div>
+}
+<button @onclick="SubmitExam">Submit Exam</button>

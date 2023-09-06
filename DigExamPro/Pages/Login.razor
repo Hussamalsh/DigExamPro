@@ -1,0 +1,52 @@
+﻿@page "/login"
+@using DigExamPro.Models;
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+
+
+<h3>Login</h3>
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="loginModel.Username" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Login</button>
+</EditForm>
+
+@code {
+    private HttpClient Http => HttpClientFactory.CreateClient("default");
+    private LoginModel loginModel = new LoginModel();
+
+    private async Task HandleLogin()
+    {
+        var response = await Http.PostAsJsonAsync("/api/authenticate/login", loginModel);
+        if (response.IsSuccessStatusCode)
+        {
+            var tokenResponse = await response.Content.ReadFromJsonAsync<TokenResponse>();
+            if (tokenResponse != null)
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "jwtToken", tokenResponse.Token);
+                // Navigate to the main page or dashboard
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        else
+        {
+            // Handle the error, e.g., display an error message.
+        }
+    }
+
+    private class TokenResponse
+    {
+        public string Token { get; set; }
+    }
+}

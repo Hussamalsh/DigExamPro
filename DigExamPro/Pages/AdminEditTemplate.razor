@@ -1,0 +1,57 @@
+﻿@using DigExamPro.Models;
+
+@code {
+    [Parameter]
+    public Exam Exam { get; set; }
+
+    private void AddQuestion(QuestionType type)
+    {
+        var question = new Question
+            {
+                QuestionType = type,
+                Options = type switch
+                {
+                    /*QuestionType.MultipleChoice => new List<string> { "", "", "", "" },
+                    QuestionType.TrueFalse => new List<string> { "True", "False" },
+                    _ => new List<string>()*/
+                }
+            };
+        Exam.Questions.Add(question);
+    }
+}
+
+<!-- Admin view for creating/editing an exam -->
+<h4>Create/Edit Exam</h4>
+<label>
+    Exam Title:
+    <input type="text" @bind="Exam.Title" />
+</label>
+
+@foreach (var question in Exam.Questions)
+{
+    var questionIndex = Exam.Questions.IndexOf(question);
+
+    <div class="question-block">
+        <label>
+            Question:
+            <input type="text" @bind="Exam.Questions[questionIndex].QuestionText" />
+        </label>
+
+        @if (question.QuestionType == QuestionType.MultipleChoice || question.QuestionType == QuestionType.TrueFalse)
+        {
+            for (int i = 0; i < question.Options.Count; i++)
+            {
+                <label>
+                    Option:
+                    <input type="text" @bind="Exam.Questions[questionIndex].Options[i]" />
+                </label>
+            }
+        }
+    </div>
+}
+
+<!-- Buttons to add different types of questions -->
+<button @onclick="() => AddQuestion(QuestionType.MultipleChoice)">Add Multiple Choice Question</button>
+<button @onclick="() => AddQuestion(QuestionType.TrueFalse)">Add True/False Question</button>
+<button @onclick="() => AddQuestion(QuestionType.FillInTheBlank)">Add Fill-in-the-blank Question</button>
+<button @onclick="() => AddQuestion(QuestionType.Essay)">Add Essay Question</button>

@@ -1,0 +1,141 @@
+﻿@page "/admin/dashboard"
+@using DigExamPro.Models
+@using DigExamPro.Services;
+using System.Linq;
+
+@inject IExamService ExamService
+@inject IQuestionService QuestionService
+@inject NavigationManager NavigationManager
+
+<h3>Admin Dashboard</h3>
+
+<!-- Section to Create, Display, Edit, Delete Exams -->
+<section>
+    <h4>Exams</h4>
+    <button @onclick="ShowCreateExamForm">Create New Exam</button>
+
+    @if (showCreateExamForm)
+    {
+        <div>
+            <EditForm Model="newExam" OnValidSubmit="CreateExam">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label for="title">Title:</label>
+                    <InputText id="title" @bind-Value="newExam.Title" class="form-control" />
+                </div>
+                <!-- Add other fields for the exam as necessary -->
+
+                <button type="submit" class="btn btn-primary">Create</button>
+            </EditForm>
+        </div>
+    }
+
+    <!-- List of exams -->
+    @foreach (var exam in exams)
+    {
+        <div>
+            <span>@exam.Title</span>
+            <button @onclick="() => EditExam(exam)">Edit</button>
+            <button @onclick="() => DeleteExam(exam.ExamID)">Delete</button>
+        </div>
+    }
+</section>
+
+<!-- Section to Add, Display, Edit, Delete Questions for an Exam -->
+<section>
+    <h4>Questions</h4>
+    <button @onclick="ShowCreateQuestionForm">Add New Question</button>
+
+    @if (showCreateQuestionForm)
+    {
+        <div>
+            <EditForm Model="newQuestion" OnValidSubmit="CreateQuestion">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="form-group">
+                    <label for="questionText">Question Text:</label>
+                    <InputText id="questionText" @bind-Value="newQuestion.QuestionText" class="form-control" />
+                </div>
+                <!-- Add other fields for the question as necessary -->
+
+                <button type="submit" class="btn btn-primary">Add</button>
+            </EditForm>
+        </div>
+    }
+
+    <!-- List of questions -->
+    @foreach (var question in questions)
+    {
+        <div>
+            <span>@question.QuestionText</span>
+            <button @onclick="() => EditQuestion(question)">Edit</button>
+            <button @onclick="() => DeleteQuestion(question.QuestionID)">Delete</button>
+        </div>
+    }
+</section>
+
+@code {
+    private List<Exam> exams = new List<Exam>();
+    private Exam newExam = new Exam();
+    private bool showCreateExamForm = false;
+
+    private List<Question> questions = new List<Question>();
+    private Question newQuestion = new Question();
+    private bool showCreateQuestionForm = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        exams = (await ExamService.GetAllExamsAsync()).ToList();
+    }
+
+    private void ShowCreateExamForm()
+    {
+        showCreateExamForm = true;
+    }
+
+    private async Task CreateExam()
+    {
+        await ExamService.CreateExamAsync(newExam);
+        exams.Add(newExam);
+        newExam = new Exam(); // reset the form
+        showCreateExamForm = false;
+    }
+
+    private async Task DeleteExam(Guid examId)
+    {
+        await ExamService.DeleteExamAsync(examId);
+        exams.RemoveAll(e => e.ExamID == examId);
+    }
+
+    private void EditExam(Exam exam)
+    {
+        // Implement editing logic. You might want to navigate to another component/page for this.
+    }
+
+    private void ShowCreateQuestionForm()
+    {
+        showCreateQuestionForm = true;
+    }
+
+    private async Task CreateQuestion()
+    {
+        await QuestionService.CreateQuestionAsync(newQuestion);
+        questions.Add(newQuestion);
+        newQuestion = new Question(); // reset the form
+        showCreateQuestionForm = false;
+    }
+
+    private async Task DeleteQuestion(Guid questionId)
+    {
+        await QuestionService.DeleteQuestionAsync(questionId);
+        questions.RemoveAll(q => q.QuestionID == questionId);
+    }
+
+    private void EditQuestion(Question question)
+    {
+        // Implement editing logic. You might want to navigate to another component/page for this.
+    }
+}

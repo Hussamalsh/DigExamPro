@@ -1,0 +1,36 @@
+﻿@page "/exam"
+
+@attribute [Authorize]
+
+
+@using DigExamPro.Models;
+@using DigExamPro.Services;
+
+@inject IExamService ExamService
+
+<h3>@CurrentExam.Title</h3>
+
+@if (Role == "Admin")
+{
+    <AdminEditTemplate Exam="CurrentExam" />
+}
+else
+{
+    <StudentAttemptTemplate Exam="CurrentExam" />
+}
+
+@code 
+{
+    [Parameter]
+    public string Role { get; set; }
+
+    public Exam CurrentExam { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Fetch the exam data from your service or API here.
+        // Here's an example of how it can be done using the injected ExamService:
+        var AllExam = await ExamService.GetAllExamsAsync(); // Example exam ID
+        CurrentExam = AllExam.FirstOrDefault();
+    }
+}
